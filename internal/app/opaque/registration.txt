@@ -1,0 +1,9 @@
+package opaque
+
+import opaqueLib "github.com/bytemare/opaque"
+
+func Registration (client* opaqueLib.Client, server* opaqueLib.Server, password []byte) {
+	request := client.RegistrationInit(password)
+	response := server.RegistrationResponse(request, ServerPublicKey, CredentialIdentifier, OPRFSeed)
+	client.RegistrationFinalize(response)
+}

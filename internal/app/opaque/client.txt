@@ -1,0 +1,17 @@
+package opaque
+//
+//import "github.com/bytemare/opaque"
+//
+//type ClearTextCredentials struct {
+//	serverPublicKey []byte
+//	serverIdentity []byte
+//	clientIdentity []byte
+//}
+//
+//func CreateClearTextCredentials (serverPublicKey []byte, serverIdentity []byte, clientIdentity []byte) ClearTextCredentials {
+//	return ClearTextCredentials{serverPublicKey, serverIdentity, clientIdentity }
+//}
+//
+//func Store (password []byte, config *opaque.Configuration) {
+//	config.Client().Init("bacon")
+//}
