@@ -12,3 +12,6 @@ var CredentialIdentifier = []byte("31323334")
 var ServerPublicKey = []byte("583f7bccccbc1907ae1506bac950d08266eb3b33ba452b8df7061a390ffd736e")
 
 var ClientSecretKey = []byte("")
+
+var ServerId = []byte("server")
+var ClientId = []byte("client")

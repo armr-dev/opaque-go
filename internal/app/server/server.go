@@ -40,6 +40,26 @@ func registrationInit(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(serverRegistrationResponse)
 }
 
+func registrationFinalize(w http.ResponseWriter, req *http.Request) {
+	var registrationRecord []byte
+
+	var err = json.NewDecoder(req.Body).Decode(&registrationRecord)
+	if err != nil {
+		panic(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deserializedRecord, err := opaque.Server.DeserializeRegistrationRecord(registrationRecord)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(deserializedRecord)
+	fmt.Println(deserializedRecord)
+}
+
 func hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "hello\n")
 }
@@ -57,7 +77,8 @@ func main() {
 
 	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/headers", headers)
-	http.HandleFunc("/registration", registrationInit)
+	http.HandleFunc("/registration-init", registrationInit)
+	http.HandleFunc("/registration-finalize", registrationFinalize)
 
 	http.ListenAndServe(":8090", nil)
 }
