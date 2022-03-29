@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
 	opaqueLib "github.com/bytemare/opaque"
 	"net/http"
@@ -67,4 +68,6 @@ func (r *RegistrationService) registrationFinalize(w http.ResponseWriter, req *h
 		ClientIdentity:       opaque.ClientId,
 		RegistrationRecord:   deserializedRecord,
 	})
+
+	fmt.Println("User registered successfully!")
 }
