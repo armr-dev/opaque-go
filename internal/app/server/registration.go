@@ -1,13 +1,17 @@
-package main
+package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
+	opaqueLib "github.com/bytemare/opaque"
 	"net/http"
 )
 
-func registrationInit(w http.ResponseWriter, req *http.Request) {
+type RegistrationService struct {
+	credentialId []byte
+}
+
+func (r *RegistrationService) registrationInit(w http.ResponseWriter, req *http.Request) {
 	var registrationReq []byte
 
 	var err = json.NewDecoder(req.Body).Decode(&registrationReq)
@@ -23,14 +27,14 @@ func registrationInit(w http.ResponseWriter, req *http.Request) {
 	}
 
 	var _, serverPublicKey = opaque.Server.KeyGen()
-	credentialId := make([]byte, 64)
+	r.credentialId = make([]byte, 64)
 	pks, err := opaque.Server.Group.NewElement().Decode(serverPublicKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	serverRegistrationResponse, err := opaque.Server.RegistrationResponse(deserializedReq, pks.Bytes(), credentialId, opaque.OPRFSeed)
+	serverRegistrationResponse, err := opaque.Server.RegistrationResponse(deserializedReq, pks.Bytes(), r.credentialId, opaque.OPRFSeed)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -43,7 +47,7 @@ func registrationInit(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func registrationFinalize(w http.ResponseWriter, req *http.Request) {
+func (r *RegistrationService) registrationFinalize(w http.ResponseWriter, req *http.Request) {
 	var registrationRecord []byte
 
 	var err = json.NewDecoder(req.Body).Decode(&registrationRecord)
@@ -58,11 +62,9 @@ func registrationFinalize(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(deserializedRecord)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	fmt.Println(deserializedRecord)
+	clientRecords.Clients = append(clientRecords.Clients, opaqueLib.ClientRecord{
+		CredentialIdentifier: r.credentialId,
+		ClientIdentity:       opaque.ClientId,
+		RegistrationRecord:   deserializedRecord,
+	})
 }

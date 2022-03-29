@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
 	opaqueLib "github.com/bytemare/opaque"
 	"github.com/bytemare/opaque/message"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,14 +24,22 @@ func registrationReq() {
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}(resp.Body)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	var registrationResponse message.RegistrationResponse
-	json.Unmarshal(body, &registrationResponse)
+	err = json.Unmarshal(body, &registrationResponse)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	clientCredentials := &opaqueLib.Credentials{
 		Client: opaque.ClientId,
@@ -50,7 +59,12 @@ func registrationReq() {
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}
-	defer uploadResponse.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}(uploadResponse.Body)
 	uploadBody, err := ioutil.ReadAll(uploadResponse.Body)
 	if err != nil {
 		log.Fatalln(err)
@@ -59,6 +73,6 @@ func registrationReq() {
 	fmt.Println(string(uploadBody))
 }
 
-func main() {
+func InitClient() {
 	registrationReq()
 }
