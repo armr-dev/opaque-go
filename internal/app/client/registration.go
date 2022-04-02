@@ -3,8 +3,8 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
+	"github.com/armr-dev/opaque-go/internal/utils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -32,6 +32,7 @@ func registrationReq() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	var registrationResponse []byte
 	err = json.Unmarshal(body, &registrationResponse)
 
@@ -40,7 +41,7 @@ func registrationReq() {
 	upload, key := opaque.Client.RegistrationFinalize(m2, opaque.ClientId, opaque.ServerId)
 	exportKeyReg := key
 
-	fmt.Println(exportKeyReg)
+	utils.Use(exportKeyReg)
 
 	serializedUpload := upload.Serialize()
 	postUploadBody, _ := json.Marshal(serializedUpload)
@@ -61,5 +62,5 @@ func registrationReq() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(string(uploadBody))
+	utils.Use(uploadBody)
 }
