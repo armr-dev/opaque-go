@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
-	opaque2 "github.com/bytemare/opaque"
-	"github.com/bytemare/opaque/message"
 	"io"
 	"io/ioutil"
 	"log"
@@ -34,24 +32,17 @@ func registrationReq() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	var registrationResponse message.RegistrationResponse
+	var registrationResponse []byte
 	err = json.Unmarshal(body, &registrationResponse)
-	if err != nil {
-		log.Fatalln(err)
-	}
 
-	clientCredentials := &opaque2.Credentials{
-		Client: opaque.ClientId,
-		Server: opaque.ServerId,
-	}
+	m2, err := opaque.Client.Deserialize.RegistrationResponse(registrationResponse)
 
-	record, _, err := opaque.Client.RegistrationFinalize([]byte("senha"), clientCredentials, &registrationResponse)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	upload, key := opaque.Client.RegistrationFinalize(m2, opaque.ClientId, opaque.ServerId)
+	exportKeyReg := key
 
-	serializedUpload := record.Serialize()
+	fmt.Println(exportKeyReg)
+
+	serializedUpload := upload.Serialize()
 	postUploadBody, _ := json.Marshal(serializedUpload)
 	responseUploadBody := bytes.NewBuffer(postUploadBody)
 

@@ -12,6 +12,7 @@ func InitServer() {
 
 	http.HandleFunc("/registration-init", registrationService.registrationInit)
 	http.HandleFunc("/registration-finalize", registrationService.registrationFinalize)
+	http.HandleFunc("/auth-init", authenticationInit)
 
 	err := http.ListenAndServe(":8090", nil)
 	if err != nil {

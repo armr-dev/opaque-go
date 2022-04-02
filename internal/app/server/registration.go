@@ -21,27 +21,23 @@ func (r *RegistrationService) registrationInit(w http.ResponseWriter, req *http.
 		return
 	}
 
-	deserializedReq, err := opaque.Server.DeserializeRegistrationRequest(registrationReq)
+	deserializedReq, err := opaque.Server.Deserialize.RegistrationRequest(registrationReq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var _, serverPublicKey = opaque.Server.KeyGen()
-	r.credentialId = make([]byte, 64)
-	pks, err := opaque.Server.Group.NewElement().Decode(serverPublicKey)
+	r.credentialId = make([]byte, 32)
+	pks, err := opaque.Server.Deserialize.DecodeAkePublicKey(opaque.ServerPublicKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	serverRegistrationResponse, err := opaque.Server.RegistrationResponse(deserializedReq, pks.Bytes(), r.credentialId, opaque.OPRFSeed)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	serverRegistrationResponse := opaque.Server.RegistrationResponse(deserializedReq, pks, r.credentialId, opaque.OPRFSeed)
+	serializedResponse := serverRegistrationResponse.Serialize()
 
-	err = json.NewEncoder(w).Encode(serverRegistrationResponse)
+	err = json.NewEncoder(w).Encode(serializedResponse)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -57,7 +53,7 @@ func (r *RegistrationService) registrationFinalize(w http.ResponseWriter, req *h
 		return
 	}
 
-	deserializedRecord, err := opaque.Server.DeserializeRegistrationRecord(registrationRecord)
+	deserializedRecord, err := opaque.Server.Deserialize.RegistrationRecord(registrationRecord)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
