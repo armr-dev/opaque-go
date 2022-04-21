@@ -2,12 +2,18 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
+
+type AuthFinish struct {
+	M6s        []byte
+	SessionKey []byte
+}
 
 func authenticationInit() {
 	password := []byte("senha")
@@ -31,18 +37,33 @@ func authenticationInit() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(m5)
-	//
-	//auth2, exportKeyLogin, err := opaque.Client.LoginFinish(opaque.ClientId, opaque.ServerId, deserializedResponse)
-	//serializedRequest2 := auth2.Serialize()
-	//
-	//postBody2, _ := json.Marshal(serializedRequest2)
-	//responseBody2 := bytes.NewBuffer(postBody2)
-	//resp2, err := http.Post("http://localhost:8090/auth-init", "application/json", responseBody2)
-	//if err != nil {
-	//	log.Fatalf("An Error Occured %v", err)
-	//}
-	//
-	//fmt.Println(resp2)
-	//fmt.Println(exportKeyLogin)
+
+	ke3, exportKeyLogin, err := opaque.Client.LoginFinish(opaque.ClientId, opaque.ServerId, m5)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if ke3 == nil {
+		log.Fatalln("User not found")
+	}
+
+	sessionKey := opaque.Client.SessionKey()
+	m6s := ke3.Serialize()
+
+	body := AuthFinish{m6s, sessionKey}
+	marshalledBody, err := json.Marshal(body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	buffer := bytes.NewBuffer(marshalledBody)
+
+	resp2, err := http.Post("http://localhost:8090/auth-finalize", "application/json", buffer)
+	if err != nil {
+		log.Fatalf("An Error Occured %v", err)
+	}
+
+	var response string
+	err = json.NewDecoder(resp2.Body).Decode(&response)
+
+	fmt.Println(response)
+	fmt.Println(exportKeyLogin)
 }
