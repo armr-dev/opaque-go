@@ -15,7 +15,7 @@ type AuthenticationService struct {
 	serverKey []byte
 }
 
-func (a *AuthenticationService) authenticationInit(w http.ResponseWriter, req *http.Request) {
+func (a *AuthenticationService) AuthenticationInit(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	authReq, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -43,7 +43,7 @@ func (a *AuthenticationService) authenticationInit(w http.ResponseWriter, req *h
 	}
 }
 
-func (a *AuthenticationService) authenticationFinalize(w http.ResponseWriter, req *http.Request) {
+func (a *AuthenticationService) AuthenticationFinalize(w http.ResponseWriter, req *http.Request) {
 	var authReq = client.AuthFinish{}
 
 	var err = json.NewDecoder(req.Body).Decode(&authReq)

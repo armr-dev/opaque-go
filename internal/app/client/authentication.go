@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
 	"io/ioutil"
 	"log"
@@ -15,7 +14,7 @@ type AuthFinish struct {
 	SessionKey []byte
 }
 
-func authenticationInit() {
+func AuthenticationInit() {
 	password := []byte("senha")
 
 	auth := opaque.Client.LoginInit(password)
@@ -38,7 +37,7 @@ func authenticationInit() {
 		log.Fatalln(err)
 	}
 
-	ke3, exportKeyLogin, err := opaque.Client.LoginFinish(opaque.ClientId, opaque.ServerId, m5)
+	ke3, _, err := opaque.Client.LoginFinish(opaque.ClientId, opaque.ServerId, m5)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -64,6 +63,4 @@ func authenticationInit() {
 	var response string
 	err = json.NewDecoder(resp2.Body).Decode(&response)
 
-	fmt.Println(response)
-	fmt.Println(exportKeyLogin)
 }

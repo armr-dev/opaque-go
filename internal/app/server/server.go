@@ -8,13 +8,13 @@ import (
 var clientRecords = db.Record{}
 
 func InitServer() {
-	registrationService := RegistrationService{credentialId: []byte{}}
-	authentiationService := AuthenticationService{}
+	registrationService := RegistrationService{CredentialId: []byte{}}
+	authenticationService := AuthenticationService{}
 
-	http.HandleFunc("/registration-init", registrationService.registrationInit)
-	http.HandleFunc("/registration-finalize", registrationService.registrationFinalize)
-	http.HandleFunc("/auth-init", authentiationService.authenticationInit)
-	http.HandleFunc("/auth-finalize", authentiationService.authenticationFinalize)
+	http.HandleFunc("/registration-init", registrationService.RegistrationInit)
+	http.HandleFunc("/registration-finalize", registrationService.RegistrationFinalize)
+	http.HandleFunc("/auth-init", authenticationService.AuthenticationInit)
+	http.HandleFunc("/auth-finalize", authenticationService.AuthenticationFinalize)
 
 	err := http.ListenAndServe(":8090", nil)
 	if err != nil {

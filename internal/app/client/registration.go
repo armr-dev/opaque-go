@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func registrationReq() {
+func Registration() {
 	request := opaque.Client.RegistrationInit([]byte("senha"))
 	serializedRequest := request.Serialize()
 

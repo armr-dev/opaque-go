@@ -2,17 +2,16 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
 	opaqueLib "github.com/bytemare/opaque"
 	"net/http"
 )
 
 type RegistrationService struct {
-	credentialId []byte
+	CredentialId []byte
 }
 
-func (r *RegistrationService) registrationInit(w http.ResponseWriter, req *http.Request) {
+func (r *RegistrationService) RegistrationInit(w http.ResponseWriter, req *http.Request) {
 	var registrationReq []byte
 
 	var err = json.NewDecoder(req.Body).Decode(&registrationReq)
@@ -27,14 +26,14 @@ func (r *RegistrationService) registrationInit(w http.ResponseWriter, req *http.
 		return
 	}
 
-	r.credentialId = make([]byte, 32)
+	r.CredentialId = make([]byte, 32)
 	pks, err := opaque.Server.Deserialize.DecodeAkePublicKey(opaque.ServerPublicKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	serverRegistrationResponse := opaque.Server.RegistrationResponse(deserializedReq, pks, r.credentialId, opaque.OPRFSeed)
+	serverRegistrationResponse := opaque.Server.RegistrationResponse(deserializedReq, pks, r.CredentialId, opaque.OPRFSeed)
 	serializedResponse := serverRegistrationResponse.Serialize()
 
 	err = json.NewEncoder(w).Encode(serializedResponse)
@@ -44,7 +43,7 @@ func (r *RegistrationService) registrationInit(w http.ResponseWriter, req *http.
 	}
 }
 
-func (r *RegistrationService) registrationFinalize(w http.ResponseWriter, req *http.Request) {
+func (r *RegistrationService) RegistrationFinalize(w http.ResponseWriter, req *http.Request) {
 	var registrationRecord []byte
 
 	var err = json.NewDecoder(req.Body).Decode(&registrationRecord)
@@ -60,10 +59,9 @@ func (r *RegistrationService) registrationFinalize(w http.ResponseWriter, req *h
 	}
 
 	clientRecords.Clients = append(clientRecords.Clients, opaqueLib.ClientRecord{
-		CredentialIdentifier: r.credentialId,
+		CredentialIdentifier: r.CredentialId,
 		ClientIdentity:       opaque.ClientId,
 		RegistrationRecord:   deserializedRecord,
 	})
 
-	fmt.Println("User registered successfully!")
 }
