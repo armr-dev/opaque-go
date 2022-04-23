@@ -12,6 +12,8 @@ var ServerSecretKey = serverSecretKey
 var ServerPublicKey = pks
 
 var ServerId = []byte("server")
-var ClientId = []byte("client")
 
 var OPRFSeed = DefaultOpaqueConfig.GenerateOPRFSeed()
+
+var DefaultUsername = "Usuario"
+var DefaultPassword = "Senha"

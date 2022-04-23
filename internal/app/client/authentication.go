@@ -9,18 +9,29 @@ import (
 	"net/http"
 )
 
+type AuthInit struct {
+	Auth     []byte
+	Username string
+}
+
 type AuthFinish struct {
 	M6s        []byte
 	SessionKey []byte
 }
 
-func AuthenticationInit() {
-	password := []byte("senha")
+func Authentication(username, password string) {
+	auth := opaque.Client.LoginInit([]byte(password))
+	sAuth := auth.Serialize()
 
-	auth := opaque.Client.LoginInit(password)
-	requestBody := bytes.NewReader(auth.Serialize())
+	var authInit = AuthInit{
+		Auth:     sAuth,
+		Username: username,
+	}
 
-	resp, err := http.Post("http://localhost:8090/auth-init", "application/json", requestBody)
+	postBody, _ := json.Marshal(authInit)
+	bufferBody := bytes.NewBuffer(postBody)
+
+	resp, err := http.Post("http://localhost:8090/auth-init", "application/json", bufferBody)
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}
@@ -37,7 +48,7 @@ func AuthenticationInit() {
 		log.Fatalln(err)
 	}
 
-	ke3, _, err := opaque.Client.LoginFinish(opaque.ClientId, opaque.ServerId, m5)
+	ke3, _, err := opaque.Client.LoginFinish([]byte(username), opaque.ServerId, m5)
 	if err != nil {
 		log.Fatalln(err)
 	}

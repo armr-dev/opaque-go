@@ -11,8 +11,13 @@ import (
 	"net/http"
 )
 
-func Registration() {
-	request := opaque.Client.RegistrationInit([]byte("senha"))
+type ClientRegistration struct {
+	Upload   []byte
+	Username string
+}
+
+func Registration(username, password string) {
+	request := opaque.Client.RegistrationInit([]byte(password))
 	serializedRequest := request.Serialize()
 
 	postBody, _ := json.Marshal(serializedRequest)
@@ -38,13 +43,18 @@ func Registration() {
 
 	m2, err := opaque.Client.Deserialize.RegistrationResponse(registrationResponse)
 
-	upload, key := opaque.Client.RegistrationFinalize(m2, opaque.ClientId, opaque.ServerId)
+	upload, key := opaque.Client.RegistrationFinalize(m2, []byte(username), opaque.ServerId)
 	exportKeyReg := key
 
 	utils.Use(exportKeyReg)
 
 	serializedUpload := upload.Serialize()
-	postUploadBody, _ := json.Marshal(serializedUpload)
+	var regFinalize = ClientRegistration{
+		Upload:   serializedUpload,
+		Username: username,
+	}
+
+	postUploadBody, _ := json.Marshal(regFinalize)
 	responseUploadBody := bytes.NewBuffer(postUploadBody)
 
 	uploadResponse, err := http.Post("http://localhost:8090/registration-finalize", "application/json", responseUploadBody)

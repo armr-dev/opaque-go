@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/armr-dev/opaque-go/internal/app/client"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
-	"io/ioutil"
+	"github.com/armr-dev/opaque-go/internal/utils"
 	"log"
 	"net/http"
 )
@@ -16,20 +16,26 @@ type AuthenticationService struct {
 }
 
 func (a *AuthenticationService) AuthenticationInit(w http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
-	authReq, err := ioutil.ReadAll(req.Body)
+	var authReq client.AuthInit
+
+	var err = json.NewDecoder(req.Body).Decode(&authReq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deserializedReq, err := opaque.Server.Deserialize.KE1(authReq)
+	deserializedReq, err := opaque.Server.Deserialize.KE1(authReq.Auth)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	ke2, err := opaque.Server.LoginInit(deserializedReq, opaque.ServerId, opaque.ServerSecretKey, opaque.ServerPublicKey, opaque.OPRFSeed, &clientRecords.Clients[0])
+	client, err := utils.FindClient(clientRecords.Clients, authReq.Username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	ke2, err := opaque.Server.LoginInit(deserializedReq, opaque.ServerId, opaque.ServerSecretKey, opaque.ServerPublicKey, opaque.OPRFSeed, &client)
 
 	state := opaque.Server.SerializeState()
 	ke2s := ke2.Serialize()

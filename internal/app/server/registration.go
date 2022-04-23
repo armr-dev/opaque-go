@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/armr-dev/opaque-go/internal/app/client"
 	"github.com/armr-dev/opaque-go/internal/app/opaque"
 	opaqueLib "github.com/bytemare/opaque"
 	"net/http"
@@ -44,7 +45,7 @@ func (r *RegistrationService) RegistrationInit(w http.ResponseWriter, req *http.
 }
 
 func (r *RegistrationService) RegistrationFinalize(w http.ResponseWriter, req *http.Request) {
-	var registrationRecord []byte
+	var registrationRecord client.ClientRegistration
 
 	var err = json.NewDecoder(req.Body).Decode(&registrationRecord)
 	if err != nil {
@@ -52,7 +53,7 @@ func (r *RegistrationService) RegistrationFinalize(w http.ResponseWriter, req *h
 		return
 	}
 
-	deserializedRecord, err := opaque.Server.Deserialize.RegistrationRecord(registrationRecord)
+	deserializedRecord, err := opaque.Server.Deserialize.RegistrationRecord(registrationRecord.Upload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -60,7 +61,7 @@ func (r *RegistrationService) RegistrationFinalize(w http.ResponseWriter, req *h
 
 	clientRecords.Clients = append(clientRecords.Clients, opaqueLib.ClientRecord{
 		CredentialIdentifier: r.CredentialId,
-		ClientIdentity:       opaque.ClientId,
+		ClientIdentity:       []byte(registrationRecord.Username),
 		RegistrationRecord:   deserializedRecord,
 	})
 
